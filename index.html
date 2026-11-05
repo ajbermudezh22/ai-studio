@@ -170,7 +170,7 @@ footer b{color:var(--ink)}
   <div class="levels">
     <a class="lv c1" href="#basic"><div class="bar"><span class="caps">1 · Basic</span><span class="caps">3 min</span></div><div class="body"><span class="tool"><i></i>ChatGPT · agent mode</span><h2>It doesn't answer. It does.</h2><p>The same request as a chat and as an agent. One writes text, the other opens websites and comes back with a result.</p><span class="go">Start →</span></div></a>
     <a class="lv c2" href="#intermediate"><div class="bar"><span class="caps">2 · Intermediate</span><span class="caps">5 min</span></div><div class="body"><span class="tool"><i></i>Gemini 4 Argon · Google Workspace</span><h2>Your stuff. Your call.</h2><p>A photo of your notes becomes a Google Sheet and a draft email. Nothing goes out until you say yes.</p><span class="go">Start →</span></div></a>
-    <a class="lv c3" href="#advanced"><div class="bar"><span class="caps">3 · Advanced</span><span class="caps">7 min</span></div><div class="body"><span class="tool"><i></i>Claude Code</span><h2>Your idea, built in minutes.</h2><p>Describe a feature for one of our small web apps. AI writes the code, a review checks it, and you open your own version on your phone.</p><span class="go">Start →</span></div></a>
+    <a class="lv c3" href="#advanced"><div class="bar"><span class="caps">3 · Advanced</span><span class="caps">7 min</span></div><div class="body"><span class="tool"><i></i>Claude Code</span><h2>Your idea, live on your phone.</h2><p>Describe a feature for one of our small web apps. AI writes the code, a review checks it, and you scan your own working version, right in your phone's browser.</p><span class="go">Start →</span></div></a>
   </div>
   <p class="strip"><span class="dots"><i style="background:var(--l1)"></i><i style="background:var(--l2)"></i><i style="background:var(--l3)"></i></span><b>All three in 15 minutes:</b> 3 + 5 + 7. Then scan the QR code to take everything home.</p>
 </section>
@@ -301,7 +301,7 @@ function drawQR(el, url) {
 }
 function renderAdv() {
   const el = $('#v-advanced');
-  el.innerHTML = back + head(3, 'Advanced', '7 min', 'Claude Code', 'Your idea, built in minutes.', 'Pick one of our small web apps and describe a feature in plain words. Claude Code writes it on the visitor\'s own branch, a review checks it, and the visitor opens their own version on their phone.') + `
+  el.innerHTML = back + head(3, 'Advanced', '7 min', 'Claude Code', 'Your idea, live on your phone.', 'Pick one of our small web apps and describe a feature in plain words. Claude Code writes it on the visitor\'s own branch, a review checks it, and the visitor opens their own version on their phone.') + `
   <div class="cols"><div class="stack">
     <div class="box stack" style="gap:10px"><span class="caps soft">1 · Pick an app</span><div class="seg" id="adv-apps">${APPS.map(a => `<button data-app="${a.id}" aria-pressed="${a.id === app.id}">${esc(a.name)}</button>`).join('')}</div>
       <div class="cmd" id="adv-cmd"></div></div>
