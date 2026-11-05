@@ -140,6 +140,8 @@ footer b{color:var(--ink)}
 .their{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
 .status{align-self:flex-start;font-size:12.5px;font-weight:800;padding:3px 10px;border-radius:99px;background:var(--l2-soft);color:var(--ink)}
 .status.live{background:var(--l1-soft)}
+.status.bad{background:var(--l3-soft);color:var(--ink);border:1px solid var(--l3);border-radius:10px;font-weight:700;line-height:1.4;padding:6px 10px}
+.status.bad a{color:inherit;font-weight:800}
 .their .url{font-family:var(--mono);font-size:13px;word-break:break-all}
 .built-app{display:flex;flex-direction:column;gap:8px}
 .built-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
@@ -302,14 +304,34 @@ function drawQR(el, url) {
   el.innerHTML = q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); el.hidden = false;
 }
 let advPoll = null;
+const waitingSince = {};
 async function checkLive() {
   const st = $('#adv-status'); if (!st || $('#v-advanced').hidden) { clearInterval(advPoll); return; }
-  const slug = branchSlug(), a = app;
-  let live = false;
-  try { const r = await fetch(`https://${GH}.github.io/${a.id}/builds.json?t=${Date.now()}`, { cache: 'no-store' }); live = r.ok && (await r.json()).some(b => b.slug === slug); } catch (e) {}
+  const slug = branchSlug(), a = app, key = a.id + '/' + slug;
+  let live = false, reachable = true;
+  try {
+    const r = await fetch(`https://${GH}.github.io/${a.id}/builds.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (!r.ok) throw new Error(r.status);
+    live = (await r.json()).some(b => b.slug === slug);
+  } catch (e) { reachable = false; }
   if (slug !== branchSlug() || a !== app) return;
-  st.classList.toggle('live', live);
-  st.textContent = live ? 'Live · scan now' : 'Not online yet · about a minute after Claude Code pushes';
+  st.className = 'status';
+  if (!reachable) {
+    st.classList.add('bad');
+    st.textContent = "Can't reach GitHub right now. Check the Wi-Fi or hotspot. Don't let the visitor scan yet.";
+  } else if (live) {
+    delete waitingSince[key];
+    st.classList.add('live');
+    st.textContent = 'Live · scan now';
+  } else {
+    waitingSince[key] = waitingSince[key] || Date.now();
+    if (Date.now() - waitingSince[key] > 3 * 60 * 1000) {
+      st.classList.add('bad');
+      st.innerHTML = `Still not online after 3 minutes. Check that Claude Code pushed the branch <b>visitor/${esc(slug)}</b> (same name and idea as here) and that the last run succeeded in <a href="https://github.com/${GH}/${a.id}/actions" target="_blank" rel="noopener">GitHub Actions ↗</a>.`;
+    } else {
+      st.textContent = 'Not online yet · about a minute after Claude Code pushes';
+    }
+  }
 }
 function renderAdv() {
   const el = $('#v-advanced');
