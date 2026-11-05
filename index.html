@@ -135,13 +135,26 @@ footer b{color:var(--ink)}
 
 @media (max-width:900px){.levels,.cols{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.qr{width:180px;height:180px;background:#FFFFFF;border-radius:10px;padding:6px;flex:none}
+.qr svg{width:100%;height:100%;display:block}
+.their{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.their .url{font-family:var(--mono);font-size:13px;word-break:break-all}
+.built-app{display:flex;flex-direction:column;gap:8px}
+.built-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.built-list li{display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--line)}
+.built-list li:last-child{border-bottom:0}
+.built-list a{font-weight:700;text-decoration:none}
+.built-list span{color:var(--soft);font-size:13px;white-space:nowrap}
+.built-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:900px){.built-grid{grid-template-columns:1fr}}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 
 </head>
 <body>
 <header class="top"><div class="wrap top-in">
   <a class="brand" href="#launcher"><span class="brush">AI Studio</span><span class="caps">Agents Live</span></a>
-  <nav class="nav" aria-label="Pages"><a href="#launcher">Launcher</a><a href="#take-home">Take home</a></nav>
+  <nav class="nav" aria-label="Pages"><a href="#launcher">Launcher</a><a href="#built">Built today</a><a href="#take-home">Take home</a></nav>
   <button class="theme" id="theme">Dark</button>
 </div></header>
 
@@ -157,7 +170,7 @@ footer b{color:var(--ink)}
   <div class="levels">
     <a class="lv c1" href="#basic"><div class="bar"><span class="caps">1 · Basic</span><span class="caps">3 min</span></div><div class="body"><span class="tool"><i></i>ChatGPT · agent mode</span><h2>It doesn't answer. It does.</h2><p>The same request as a chat and as an agent. One writes text, the other opens websites and comes back with a result.</p><span class="go">Start →</span></div></a>
     <a class="lv c2" href="#intermediate"><div class="bar"><span class="caps">2 · Intermediate</span><span class="caps">5 min</span></div><div class="body"><span class="tool"><i></i>Gemini 4 Argon · Google Workspace</span><h2>Your stuff. Your call.</h2><p>A photo of your notes becomes a Google Sheet and a draft email. Nothing goes out until you say yes.</p><span class="go">Start →</span></div></a>
-    <a class="lv c3" href="#advanced"><div class="bar"><span class="caps">3 · Advanced</span><span class="caps">7 min</span></div><div class="body"><span class="tool"><i></i>Claude Code</span><h2>Your idea, live on your phone.</h2><p>Tell one of our apps what it should do next. AI writes the code, you approve it, you scan it.</p><span class="go">Start →</span></div></a>
+    <a class="lv c3" href="#advanced"><div class="bar"><span class="caps">3 · Advanced</span><span class="caps">7 min</span></div><div class="body"><span class="tool"><i></i>Claude Code</span><h2>Your idea, built in minutes.</h2><p>Describe a feature for one of our small web apps. AI writes the code, a review checks it, and you open your own version on your phone.</p><span class="go">Start →</span></div></a>
   </div>
   <p class="strip"><span class="dots"><i style="background:var(--l1)"></i><i style="background:var(--l2)"></i><i style="background:var(--l3)"></i></span><b>All three in 15 minutes:</b> 3 + 5 + 7. Then scan the QR code to take everything home.</p>
 </section>
@@ -166,6 +179,11 @@ footer b{color:var(--ink)}
 <section class="view c1" id="v-basic" hidden></section>
 <section class="view c2" id="v-intermediate" hidden></section>
 <section class="view c3" id="v-advanced" hidden></section>
+<section class="view" id="v-built" hidden>
+  <div class="hero"><span class="caps soft">Agents Live · Advanced</span><h1>Built today</h1><p>Every idea a visitor built with Claude Code at the stand. Each one is a working version you can open.</p></div>
+  <div class="built-grid" id="built-grid"></div>
+  <p class="note">Updates every minute.</p>
+</section>
 
 <!-- TAKE HOME -->
 <section class="view" id="v-take-home" hidden>
@@ -173,6 +191,7 @@ footer b{color:var(--ink)}
     <div><span class="caps soft">Lift Conference 26 · AI Studio</span><h1>Take it <span class="brush">home</span></h1><p class="muted" style="margin-top:6px">Everything from the Agents Live station, ready to try on your own phone or laptop.</p></div>
     <div class="monday"><span class="caps">One thing for Monday</span><p>Pick one weekly task you don't enjoy. Let an agent do the first draft, and you decide what goes out.</p></div>
     <div class="sec"><span class="caps soft">Try the prompts</span><div id="th-prompts" class="stack"></div></div>
+    <div class="sec"><span class="caps soft">Built at the stand today</span><div class="box"><ul class="built-list" id="th-built"><li><span>Loading…</span></li></ul></div><a href="#built" class="note">See all</a></div>
     <div class="sec"><span class="caps soft">Fork the demo apps</span><div class="box"><ul class="links" id="th-repos"></ul></div></div>
     <div class="sec"><span class="caps soft">Get started</span><div class="box"><ul class="links" id="th-tools"></ul></div></div>
     <div class="sec"><span class="caps soft">Keep going at the AI Studio</span>
@@ -217,7 +236,7 @@ const P = {
   agent: () => `Find 3 restaurants near ${venue} for a team dinner of 8 people on Thursday evening, at least one with good vegetarian options.\n\nCheck their websites: menus, vegetarian dishes, opening hours and whether a table for 8 is available. Put them in a table, recommend one, and draft a short invite to the team. Don't book anything. Ask me first.`,
   gemini: `I've attached a photo of our whiteboard, our team chat notes and two photos of a venue. Help me plan our team offsite.\n\n1. List what you understood from the photos and notes.\n2. Create a budget in Google Sheets: one row per cost, quantity × unit price, and a total. Flag it if we go over budget.\n3. Draft the invite email to the team in Gmail.\n\nDon't send anything. Show me the sheet and the draft, and wait for my OK.`,
   gemini2: `Keep it under €5,000. Show me what you changed and why.`,
-  code: idea => `A visitor at our stand wants this feature: "${idea}".\n\nRead the code first and tell me your plan in 3 bullet points. Then make the change. Keep it simple and make sure it works well on a phone. When it works, commit it on a new branch and open a pull request.`,
+  code: (name, idea, branch) => `Visitor: ${name}\nIdea: "${idea}"\nBranch: ${branch}\n\nFollow the visitor workflow in CLAUDE.md. Tell me your plan in 3 bullet points first, then build it. Keep it simple and make sure it works well on a phone.`,
   review: `Review the pull request you just opened like a strict senior reviewer. List anything that could break or confuse a user. Fix what's worth fixing and push it to the same branch.`
 };
 const APPS = [
@@ -269,35 +288,51 @@ function renderInter() {
   </div></div>`;
   wireCopy(el);
 }
+const slugify = t => String(t).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+let visitor = '';
+function branchSlug() {
+  const name = slugify(visitor).split('-')[0] || 'visitor';
+  return (name + '-' + slugify(idea)).slice(0, 48).replace(/-+$/, '');
+}
+function drawQR(el, url) {
+  if (!window.qrcode) { el.innerHTML = ''; el.hidden = true; return; }
+  const q = qrcode(0, 'M'); q.addData(url); q.make();
+  el.innerHTML = q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); el.hidden = false;
+}
 function renderAdv() {
   const el = $('#v-advanced');
-  el.innerHTML = back + head(3, 'Advanced', '7 min', 'Claude Code', 'Your idea, live on your phone.', 'Three small apps are already running. The visitor says what one of them should do next. Claude Code writes it, reviews it, and the visitor approves the merge.') + `
+  el.innerHTML = back + head(3, 'Advanced', '7 min', 'Claude Code', 'Your idea, built in minutes.', 'Pick one of our small web apps and describe a feature in plain words. Claude Code writes it on the visitor\'s own branch, a review checks it, and the visitor opens their own version on their phone.') + `
   <div class="cols"><div class="stack">
     <div class="box stack" style="gap:10px"><span class="caps soft">1 · Pick an app</span><div class="seg" id="adv-apps">${APPS.map(a => `<button data-app="${a.id}" aria-pressed="${a.id === app.id}">${esc(a.name)}</button>`).join('')}</div>
       <div class="cmd" id="adv-cmd"></div></div>
-    <div class="box stack" style="gap:10px"><span class="caps soft">2 · The visitor's idea</span>
-      <div class="field"><input id="adv-idea" value="${esc(idea)}" aria-label="Visitor's idea"></div>
+    <div class="box stack" style="gap:10px"><span class="caps soft">2 · The visitor</span>
+      <div class="field"><label class="note" for="adv-name">First name only (the repo is public)</label><input id="adv-name" value="${esc(visitor)}" placeholder="e.g. Anna" autocomplete="off"></div>
+      <div class="field"><label class="note" for="adv-idea">Their idea</label><input id="adv-idea" value="${esc(idea)}"></div>
       <div class="chips" id="adv-chips">${app.ideas.map(i => `<button class="chip">${esc(i)}</button>`).join('')}</div></div>
-    ${promptBox('3 · Paste in Claude Code', P.code(idea), 'p-code')}
+    ${promptBox('3 · Paste in Claude Code', '', 'p-code')}
     ${promptBox('4 · Then ask for a review', P.review, 'p-review')}
   </div><div class="stack">
     <div class="box"><ol class="steps">
-      <li><span>Open the app on <b>localhost</b> next to the terminal, so the visitor sees it change.</span></li>
-      <li><span>Paste the prompt. Claude Code plans, edits and the app reloads live.</span></li>
-      <li><span>Ask for the review. It checks its own work on GitHub.</span></li>
-      <li><span>The visitor presses <b>Merge</b>. GitHub Pages updates, and they scan the QR code.</span></li>
+      <li><span>The app runs on <b>localhost</b> next to the terminal, so the visitor sees it change while Claude Code works.</span></li>
+      <li><span>Paste the prompt. Claude Code plans, edits, pushes the visitor's branch and opens a pull request.</span></li>
+      <li><span>Ask for the review: it checks its own work and fixes what's worth fixing.</span></li>
+      <li><span>About a minute after the push, their version is online. They scan the code below.</span></li>
     </ol></div>
-    <div class="box"><span class="caps soft">Live link to scan</span><p class="muted" style="margin-top:6px" id="adv-url"></p></div>
-    <div class="monday"><span class="caps">Take this home</span><p>The barrier to building small tools is gone. The question is what you'd build.</p></div>
+    <div class="box stack" style="gap:10px"><span class="caps soft">Their version</span>
+      <div class="their"><div class="qr" id="adv-qr"></div><div class="stack" style="gap:6px"><span class="url" id="adv-url"></span><span class="note">A web page that opens in the phone's browser. No install needed. It stays online after the conference.</span></div></div></div>
+    <div class="monday"><span class="caps">Take this home</span><p>You don't need to code to build small tools anymore. You need a clear idea and the judgement to check the result.</p></div>
   </div></div>`;
   const sync = () => {
-    $('#adv-cmd', el).textContent = `cd ~/agents-live/${app.id}\nclaude`;
-    $('#adv-url', el).innerHTML = `<span style="font-family:var(--mono)">${GH}.github.io/${app.id}</span>`;
-    $('#p-code', el).textContent = P.code(idea);
+    const slug = branchSlug(), url = `https://${GH}.github.io/${app.id}/v/${slug}/`;
+    $('#adv-cmd', el).textContent = `cd ~/Documents/Projects/AI-Studio-Lift/repos/${app.id}\nclaude`;
+    $('#p-code', el).textContent = P.code(visitor.trim() || 'a visitor', idea, 'visitor/' + slug);
+    $('#adv-url', el).textContent = url;
+    drawQR($('#adv-qr', el), url);
   };
   el.querySelectorAll('[data-app]').forEach(b => b.onclick = () => { app = APPS.find(a => a.id === b.dataset.app); idea = app.ideas[0]; renderAdv(); });
   el.querySelectorAll('#adv-chips .chip').forEach(b => b.onclick = () => { idea = b.textContent; $('#adv-idea', el).value = idea; sync(); });
   $('#adv-idea', el).oninput = e => { idea = e.target.value; sync(); };
+  $('#adv-name', el).oninput = e => { visitor = e.target.value; sync(); };
   wireCopy(el); sync();
 }
 function wireVenue(el, rerender) {
@@ -329,13 +364,36 @@ function renderTakeHome() {
   $('#th-tools').innerHTML = TOOLS.map(([n, u, d]) => `<li><a href="${u}" target="_blank" rel="noopener">${n}</a><span>${esc(d)}</span></li>`).join('');
 }
 
+/* built today */
+async function loadBuilds() {
+  const all = await Promise.all(APPS.map(async a => {
+    try { const r = await fetch(`https://${GH}.github.io/${a.id}/builds.json`, { cache: 'no-store' }); return { app: a, builds: r.ok ? await r.json() : [] }; }
+    catch (e) { return { app: a, builds: [] }; }
+  }));
+  return all;
+}
+const cap = t => t ? t[0].toUpperCase() + t.slice(1) : '';
+const hm = iso => { const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); };
+const buildItem = (a, b) => `<li><a href="https://${GH}.github.io/${a.id}/v/${b.slug}/" target="_blank" rel="noopener">${esc(cap(b.name))}: ${esc(b.idea || 'new version')}</a><span>${hm(b.updated)}</span></li>`;
+async function renderBuilt() {
+  const all = await loadBuilds();
+  $('#built-grid').innerHTML = all.map(({ app: a, builds }) => `<div class="box built-app"><h3>${esc(a.name)}</h3><span class="note">${builds.length} visitor version${builds.length === 1 ? '' : 's'}</span><ul class="built-list">${builds.map(b => buildItem(a, b)).join('') || '<li><span>No versions yet.</span></li>'}</ul></div>`).join('');
+}
+async function renderBuiltTakeHome() {
+  const all = await loadBuilds();
+  const flat = all.flatMap(({ app: a, builds }) => builds.map(b => ({ a, b }))).sort((x, y) => String(y.b.updated).localeCompare(String(x.b.updated))).slice(0, 8);
+  $('#th-built').innerHTML = flat.map(({ a, b }) => buildItem(a, b).replace('</a>', ` · ${esc(a.name)}</a>`)).join('') || '<li><span>The first versions appear here once visitors start building.</span></li>';
+}
+let builtTimer = null;
+
 /* routing */
-const VIEWS = { launcher: null, basic: renderBasic, intermediate: renderInter, advanced: renderAdv, 'take-home': renderTakeHome };
+const VIEWS = { launcher: null, basic: renderBasic, intermediate: renderInter, advanced: renderAdv, built: renderBuilt, 'take-home': () => { renderTakeHome(); renderBuiltTakeHome(); } };
 function route() {
   const v = location.hash.slice(1) in VIEWS ? location.hash.slice(1) : 'launcher';
   Object.keys(VIEWS).forEach(k => $('#v-' + k).hidden = k !== v);
   if (VIEWS[v]) VIEWS[v]();
-  const navKey = v === 'take-home' ? 'take-home' : 'launcher';
+  const navKey = v === 'take-home' || v === 'built' ? v : 'launcher';
+  clearInterval(builtTimer); if (v === 'built') builtTimer = setInterval(renderBuilt, 60000);
   document.querySelectorAll('.nav a').forEach(a => a.getAttribute('href') === '#' + navKey ? a.setAttribute('aria-current','page') : a.removeAttribute('aria-current'));
   window.scrollTo(0, 0);
 }

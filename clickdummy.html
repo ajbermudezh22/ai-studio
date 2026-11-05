@@ -354,7 +354,7 @@ tr.pick td{background:var(--ok-soft)}
   <div class="levels-grid">
     <a class="lv g" href="#basic"><div class="top-line"><span class="chip">Basic</span><span class="time">2–3 min</span></div><span class="tool brand-gpt"><i></i>ChatGPT · agent mode</span><h3>It doesn't answer. It does.</h3><p>A chatbot writes text. An agent makes a plan, opens websites, checks the facts and comes back with a result.</p><span class="go">Start →</span></a>
     <a class="lv y" href="#intermediate"><div class="top-line"><span class="chip">Intermediate</span><span class="time">5–6 min</span></div><span class="tool brand-gem"><i></i>Gemini 4 Argon · Google Workspace</span><h3>Your stuff. Your call.</h3><p>Photos, notes and a spreadsheet. The agent prepares everything, then stops and asks before it acts.</p><span class="go">Start →</span></a>
-    <a class="lv p" href="#advanced"><div class="top-line"><span class="chip">Advanced</span><span class="time">8–10 min</span></div><span class="tool brand-cc"><i></i>Claude Code</span><h3>Your idea, live on your phone.</h3><p>Pick an app, say what it should do next. The agent builds it, an AI reviews it, you approve it, and you scan it.</p><span class="go">Start →</span></a>
+    <a class="lv p" href="#advanced"><div class="top-line"><span class="chip">Advanced</span><span class="time">8–10 min</span></div><span class="tool brand-cc"><i></i>Claude Code</span><h3>Your idea, built in minutes.</h3><p>Pick an app, say what it should do next. The agent builds it, an AI reviews it, you approve it, and you scan it.</p><span class="go">Start →</span></a>
   </div>
   <p class="note-line">Clickdummy. Each level is styled after the tool we use live. On the day, the demos run in the real ChatGPT, Gemini and Claude Code.</p>
 </section>
@@ -416,7 +416,7 @@ tr.pick td{background:var(--ok-soft)}
 </section>
 
 <section class="view brand-cc" id="v-advanced" hidden>
-  <div class="head p"><span class="chip">Advanced · 8–10 min · Claude Code</span><h2>Your idea, live on your phone.</h2><p>Three small apps are already live. Pick one and say what it should do next. Claude Code changes the code in the terminal and opens a pull request, an AI reviews it, you approve it, and it ships.</p></div>
+  <div class="head p"><span class="chip">Advanced · 8–10 min · Claude Code</span><h2>Your idea, built in minutes.</h2><p>Three small apps are already live. Pick one and say what it should do next. Claude Code changes the code in the terminal and opens a pull request, an AI reviews it, you approve it, and it ships.</p></div>
   <div class="app-tabs" role="tablist" aria-label="Demo apps" id="a-tabs"></div>
   <div class="adv">
     <div class="phone-col">
@@ -907,7 +907,7 @@ async function merge(feat, t) {
   await wait(1400); if (!ok()) return;
   st.pending = null; renderApp(); renderChips();
   $('#ship-l').textContent = 'Live · scan to take it home';
-  $('#ship-h').textContent = `${feat.chip}: live on your phone`;
+  $('#ship-h').textContent = `${feat.chip}: live, open it on your phone`;
 }
 
 /* QR placeholder */
