@@ -264,7 +264,7 @@ let venue = store.get('as-venue') || 'the conference venue';
 const P = {
   chat: () => `Find 3 restaurants near ${venue} for a team dinner of 8 people on Thursday evening, at least one with good vegetarian options. Compare them and recommend one.`,
   agent: () => `Find 3 restaurants near ${venue} for a team dinner of 8 people on Thursday evening, at least one with good vegetarian options.\n\nCheck their websites: menus, vegetarian dishes, opening hours and whether a table for 8 is available. Put them in a table, recommend one, and draft a short invite to the team. Don't book anything. Ask me first.`,
-  gemini: `I've attached a photo of our whiteboard, our team chat notes and two photos of a venue. Help me plan our team offsite.\n\n1. List what you understood from the photos and notes.\n2. Create a budget in Google Sheets: one row per cost, quantity × unit price, and a total. Flag it if we go over budget.\n3. Draft the invite email to the team in Gmail.\n\nDon't send anything. Show me the sheet and the draft, and wait for my OK.`,
+  gemini: `I've attached a photo of our whiteboard, our team chat and the venue's offer (PDF). Help me plan our team offsite.\n\n1. List what you understood from the whiteboard, the chat and the offer.\n2. Create a budget in Google Sheets: one row per cost, quantity × unit price, and a total. Flag it if we go over budget.\n3. Draft the invite email to the team in Gmail.\n\nDon't send anything. Show me the sheet and the draft, and wait for my OK.`,
   gemini2: `Keep it under €5,000. Show me what you changed and why.`,
   code: (name, idea, branch) => `Visitor: ${name}\nIdea: "${idea}"\nBranch: ${branch}\n\nFollow the visitor workflow in CLAUDE.md. Tell me your plan in 3 bullet points first, then build it. Keep it simple and make sure it works well on a phone.`,
   review: `Review the pull request you just opened like a strict senior reviewer. List anything that could break or confuse a user. Fix what's worth fixing and push it to the same branch.`
@@ -313,7 +313,7 @@ function renderInter() {
       <li><span>Pick <b>Gemini 4 Argon</b>, attach the photo, the chat notes and the venue photos, and paste the prompt.</span></li>
       <li><span>Open the sheet and the draft. Ask for one change, then the visitor approves.</span></li>
     </ol></div>
-    <div class="box"><span class="caps soft">Prepared files</span><p class="muted" style="margin-top:6px">whiteboard.jpg · team-chat.txt · venue-1.jpg · venue-2.jpg</p></div>
+    <div class="box"><span class="caps soft">Prepared files</span><p class="muted" style="margin-top:6px">whiteboard-photo.png · team-chat.txt · seehaus-offer.pdf<br><span class=\"note\">In the folder \u201cIntermediate level - Gemini files\u201d</span></p></div>
     <div class="monday"><span class="caps">Take this home</span><p>Agents prepare, humans decide. You choose where the stop sign goes.</p></div>
   </div></div>`;
   wireCopy(el);
@@ -399,7 +399,14 @@ function renderAdv() {
 }
 function wireVenue(el, rerender) {
   const v = $('#venue', el); if (!v) return;
-  v.onchange = e => { venue = e.target.value.trim() || 'the conference venue'; store.set('as-venue', venue); rerender(); };
+  // Update both prompts while typing, without re-rendering (keeps the cursor in the field).
+  v.oninput = e => {
+    venue = e.target.value.trim() || 'the conference venue';
+    store.set('as-venue', venue);
+    const chat = $('#p-chat', el), agent = $('#p-agent', el);
+    if (chat) chat.textContent = P.chat();
+    if (agent) agent.textContent = P.agent();
+  };
 }
 
 /* take home */
