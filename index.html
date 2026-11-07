@@ -140,6 +140,17 @@ footer b{color:var(--ink)}
 .their{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
 .status{align-self:flex-start;font-size:12.5px;font-weight:800;padding:3px 10px;border-radius:99px;background:var(--l2-soft);color:var(--ink)}
 .status.live{background:var(--l1-soft)}
+.ba{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.ba figure{margin:0;display:flex;flex-direction:column;gap:10px;align-items:center;min-width:0}
+.ba figcaption{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;text-align:center}
+.ba .tag{font-size:12px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;padding:4px 10px;border-radius:99px}
+.ba .tag.before{background:var(--line);color:var(--ink)}
+.ba .tag.after{background:var(--l3);color:#121212}
+.phone-frame{position:relative;width:100%;max-width:340px;height:640px;border:10px solid #121212;border-radius:34px;overflow:hidden;background:#FFFFFF;box-shadow:0 14px 30px rgba(18,18,18,.12)}
+.phone-frame iframe{width:100%;height:100%;border:0;display:block}
+.ba-wait{position:absolute;inset:0;display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;text-align:center;padding:24px;color:#4A4D5C;font-size:15px;background:repeating-linear-gradient(135deg,#FFFFFF 0 14px,#F5F6FA 14px 28px)}
+.ba-wait b{font-size:18px;color:#121212}
+@media (max-width:760px){.ba{grid-template-columns:1fr}}
 .status.bad{background:var(--l3-soft);color:var(--ink);border:1px solid var(--l3);border-radius:10px;font-weight:700;line-height:1.4;padding:6px 10px}
 .status.bad a{color:inherit;font-weight:800}
 .their .url{font-family:var(--mono);font-size:13px;word-break:break-all}
@@ -342,6 +353,7 @@ async function checkLive() {
   } catch (e) { reachable = false; }
   if (slug !== branchSlug() || a !== app) return;
   st.className = 'status';
+  if (!live) showAfter(null);
   if (!reachable) {
     st.classList.add('bad');
     st.textContent = "Can't reach GitHub right now. Check the Wi-Fi or hotspot. Don't let the visitor scan yet.";
@@ -349,6 +361,7 @@ async function checkLive() {
     delete waitingSince[key];
     st.classList.add('live');
     st.textContent = 'Live · scan now';
+    showAfter(`https://${GH}.github.io/${a.id}/v/${slug}/`);
   } else {
     waitingSince[key] = waitingSince[key] || Date.now();
     if (Date.now() - waitingSince[key] > 3 * 60 * 1000) {
@@ -358,6 +371,12 @@ async function checkLive() {
       st.textContent = 'Not online yet · about a minute after Claude Code pushes';
     }
   }
+}
+function showAfter(url) {
+  const f = $('#ba-after'), w = $('#ba-wait'), r = $('#ba-reload'); if (!f) return;
+  if (!url) { f.hidden = true; w.hidden = false; r.hidden = true; f.dataset.src = ''; f.removeAttribute('src'); return; }
+  if (f.dataset.src !== url) { f.dataset.src = url; f.src = url; }
+  f.hidden = false; w.hidden = true; r.hidden = false;
 }
 function renderAdv() {
   const el = $('#v-advanced');
@@ -381,19 +400,32 @@ function renderAdv() {
     <div class="box stack" style="gap:10px"><span class="caps soft">Their version</span>
       <div class="their"><div class="qr" id="adv-qr"></div><div class="stack" style="gap:6px"><span class="status" id="adv-status"></span><span class="url" id="adv-url"></span><span class="note">A web page that opens in the phone's browser. No install needed. It stays online after the conference.</span></div></div></div>
     <div class="monday"><span class="caps">Take this home</span><p>You don't need to code to build small tools anymore. You need a clear idea and the judgement to check the result.</p></div>
-  </div></div>`;
+  </div></div>
+  <div class="box stack" style="gap:14px"><span class="caps soft">Before and after</span>
+    <div class="ba">
+      <figure><figcaption><span class="tag before">Before</span><span class="note">The app as it is now. Try it.</span></figcaption>
+        <div class="phone-frame"><iframe id="ba-before" title="The app before the change"></iframe></div></figure>
+      <figure><figcaption><span class="tag after">After</span><span class="note" id="ba-after-cap"></span><button class="btn small" id="ba-reload" hidden>Reload</button></figcaption>
+        <div class="phone-frame"><iframe id="ba-after" title="The visitor's version" hidden></iframe>
+          <div class="ba-wait" id="ba-wait"><b>Their version appears here</b><span>as soon as the status above says <i>Live</i>.</span></div></div></figure>
+    </div>
+  </div>`;
   const sync = () => {
     const slug = branchSlug(), url = `https://${GH}.github.io/${app.id}/v/${slug}/`;
     $('#adv-cmd', el).textContent = `cd ~/Documents/Projects/AI-Studio-Lift/repos/${app.id}\nclaude`;
     $('#p-code', el).textContent = P.code(visitor.trim() || 'a visitor', idea, 'visitor/' + slug);
     $('#adv-url', el).textContent = url;
     drawQR($('#adv-qr', el), url);
+    const before = $('#ba-before', el), baseUrl = `https://${GH}.github.io/${app.id}/`;
+    if (before.dataset.src !== baseUrl) { before.dataset.src = baseUrl; before.src = baseUrl; }
+    $('#ba-after-cap', el).textContent = (visitor.trim() ? cap(visitor.trim().split(/\s+/)[0]) + "'s version" : "The visitor's version") + ': ' + idea;
     checkLive();
   };
   el.querySelectorAll('[data-app]').forEach(b => b.onclick = () => { app = APPS.find(a => a.id === b.dataset.app); idea = app.ideas[0]; renderAdv(); });
   el.querySelectorAll('#adv-chips .chip').forEach(b => b.onclick = () => { idea = b.textContent; $('#adv-idea', el).value = idea; sync(); });
   $('#adv-idea', el).oninput = e => { idea = e.target.value; sync(); };
   $('#adv-name', el).oninput = e => { visitor = e.target.value; sync(); };
+  $('#ba-reload', el).onclick = () => { const f = $('#ba-after', el); f.src = f.dataset.src + '?r=' + Date.now(); };
   wireCopy(el); sync();
   clearInterval(advPoll); advPoll = setInterval(checkLive, 10000);
 }
